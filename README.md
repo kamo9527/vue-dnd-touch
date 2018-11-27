@@ -85,7 +85,7 @@ export default {
 
 #### Arguments:
 
- * `{item} Object`
+ * `{item} String`
  * `{list} Array`
  * `{group} String`
 
