@@ -4,14 +4,14 @@ Makes your elements draggable in Vue.
 
 Some of goals of this project worth noting include:
 
-* support desktop and mobile 
+* support mobile 
 * Vue data-driven philosophy
-* Supports both of Vue 1.0 and Vue 2.0
+* Supports Vue 2.0+
 
 
 ## Requirements
 
-- Vue: ^2.0.0+ 
+- Vue: ^2.0.0+
 
 ## Install
 
@@ -40,14 +40,11 @@ export default {
   data () {
     return {
         images: [
-          'img_url...',
-          'img_url...',
-          'img_url...',
-          'img_url...',
-          'img_url...',
-          'img_url...',
-          'img_url...',
-          'img_url...'
+          {src: 'xxxx', name: 'xxxx'},
+          {src: 'xxxx', name: 'xxxx'},
+          {src: 'xxxx', name: 'xxxx'},
+          {src: 'xxxx', name: 'xxxx'},
+          {src: 'xxxx', name: 'xxxx'}
         ]
     }
   }
@@ -58,9 +55,11 @@ export default {
   <div class="color-list">
       <div 
           class="color-item" 
-          v-for="(item, index) in images" v-dragging="{ item: item, list: images, group: 'item' }"
+          v-for="(item, index) in images" 
+          v-dragging="{ list: images, key: 'src',  group: 'group_01' }"
           :key="index">
-          <img :src="item" />
+          <img :src="item.src" />
+          <div class="title">{{item.name}}</div>
       </div>
   </div>
 </template>
@@ -81,15 +80,16 @@ export default {
 
 # API
 
-`v-dragging="{ item: item, list: images, group: 'item' }"`
+`v-dragging="{ list: images, key: 'src',  group: 'group_01' }"`
 
 #### Arguments:
 
- * `{item} String`
- * `{list} Array`
- * `{group} String`
+ * `{list} Array: 拖拽图片数组`
+ * `{key} String: 拖拽图片每项图片url的key`
+ * `{group} String: 拖拽图片组名（唯一的），可以有多个组`
 
- `group` is unique key of dragable list.
+ `group` is unique name of multiple dragable lists.
+ `key` is the key of each photo.
 
 
 # License

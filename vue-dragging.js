@@ -112,8 +112,9 @@ export default function(Vue) {
     const el = getBlockEl(e.target)
     const drag_key = el.getAttribute('drag_key')
     const drag_group = el.getAttribute('drag_group')
+    const url_key = el.getAttribute('url_key')
     const touch = e.touches[0]
-    targetUrl = dragDataByGroup[drag_group][drag_key]
+    targetUrl = dragDataByGroup[drag_group][drag_key][url_key]
     if (targetUrl) {
       indexFrom = drag_key
       imgMove = document.querySelector('.vue_dnd_img')
@@ -124,19 +125,21 @@ export default function(Vue) {
     let areaLength = elAreaByGroup[drag_group].length
     let dataLength = dragDataByGroup[drag_group].length
     if (areaLength !== dataLength) {
-      let allEl = el.parentNode.childNodes
+      let allEl = el.parentNode.children
       let scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       let scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
       for (var i = 0; i < allEl.length; i++) {
         let v = allEl[i]
-        let elClientRect = v.getBoundingClientRect()
-        let elLocation = {
-          top: elClientRect.top + scrollTop,
-          left: elClientRect.left + scrollLeft,
-          width: elClientRect.width,
-          height: elClientRect.height
+        if (v.getAttribute && v.getAttribute('drag_group')) {
+          let elClientRect = v.getBoundingClientRect()
+          let elLocation = {
+            top: elClientRect.top + scrollTop,
+            left: elClientRect.left + scrollLeft,
+            width: elClientRect.width,
+            height: elClientRect.height
+          }
+          elAreaByGroup[drag_group].push(elLocation)
         }
-        elAreaByGroup[drag_group].push(elLocation)
       }
     }
   }
@@ -151,6 +154,7 @@ export default function(Vue) {
   function handleTouchEnd(e) {
     const el = getBlockEl(e.target)
     const drag_group = el.getAttribute('drag_group')
+    const url_key = el.getAttribute('url_key')
     if (indexFrom > -1 && touchFinal) {
       if (!elAreaByGroup[drag_group] || elAreaByGroup[drag_group].length === 0) return
       if (!dragDataByGroup[drag_group] || dragDataByGroup[drag_group].length === 0) return
@@ -158,9 +162,11 @@ export default function(Vue) {
         return v.left <= touchFinal.pageX && touchFinal.pageX <= (v.left + v.width) && v.top <= touchFinal.pageY && touchFinal.pageY <= (v.top + v.height)
       })
       if (indexTo > -1) {
-        let url = dragDataByGroup[drag_group][indexTo]
-        dragDataByGroup[drag_group].splice(indexFrom, 1, url)
-        dragDataByGroup[drag_group].splice(indexTo, 1, targetUrl)
+        let url = dragDataByGroup[drag_group][indexTo][url_key]
+        dragDataByGroup[drag_group][indexFrom][url_key] = url
+        dragDataByGroup[drag_group][indexTo][url_key] = targetUrl
+        // dragDataByGroup[drag_group].splice(indexFrom, 1, url)
+        // dragDataByGroup[drag_group].splice(indexTo, 1, targetUrl)
         // swapArrayElements(dragDataByGroup[drag_group], indexFrom, indexTo)
       }
     }
@@ -170,7 +176,7 @@ export default function(Vue) {
     imgMove.src = ''
   }
 
-  // 循环获取有绑定group属性的父元素
+  // 循环获取有绑定drag_group属性的父元素
   function getBlockEl(el) {
     if (!el) return
     while (el.parentNode) {
@@ -182,24 +188,6 @@ export default function(Vue) {
     }
   }
 
-  // function swapArrayElements(items, indexFrom, indexTo) {
-  //   let item = items[indexTo]
-  //   if (isPreVue) {
-  //     items.$set(indexTo, items[indexFrom])
-  //     items.$set(indexFrom, item)
-  //   } else {
-  //     console.log('aaa')
-  //     Vue.set(items, indexTo, items[indexFrom])
-  //     Vue.set(items, indexFrom, item)
-  //   }
-  // }
-
-  // function getOverElementFromTouch(e) {
-  //   const touch = e.touches[0]
-  //   const el = document.elementFromPoint(touch.pageX, touch.pageY)
-  //   return el
-  // }
-
   function addDragItem(el, binding, vnode) {
     const list = binding.value.list
     const drag_group = binding.value.group
@@ -209,6 +197,7 @@ export default function(Vue) {
       elAreaByGroup[drag_group] = []
     }
     el.setAttribute('drag_group', binding.value.group)
+    el.setAttribute('url_key', binding.value.key)
     el.setAttribute('drag_key', drag_key)
 
     // _.on(el, 'dragstart', handleDragStart)
